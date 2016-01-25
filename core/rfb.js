@@ -59,6 +59,7 @@ export default class RFB extends EventTargetMixin {
         this._rfb_version = 0;
         this._rfb_max_version = 3.8;
         this._rfb_tightvnc = false;
+        this._rfb_openvnc = false;
         this._rfb_xvp_ver = 0;
 
         this._fb_width = 0;
@@ -166,7 +167,7 @@ export default class RFB extends EventTargetMixin {
         this._canvas.tabIndex = -1;
         this._screen.appendChild(this._canvas);
 
-    this._cursor = new Cursor();
+        this._cursor = new Cursor();
 
         // populate encHandlers with bound versions
         this._encHandlers[encodings.encodingRaw] = RFB.encodingHandlers.RAW.bind(this);
@@ -1241,6 +1242,9 @@ export default class RFB extends EventTargetMixin {
         if (this._fb_name === "Intel(r) AMT KVM") {
             Log.Warn("Intel AMT KVM only supports 8/16 bit depths. Using low color mode.");
             this._fb_depth = 8;
+        } else if (this._fb_name === "OpenVNC") {
+	    Log.Warn("OpenVNC will not respond to TIGHT or COPYRECT encodings; will not be sent to server.");
+	    this._rfb_openvnc = true;
         }
 
         RFB.messages.pixelFormat(this._sock, this._fb_depth, true);
@@ -1258,11 +1262,11 @@ export default class RFB extends EventTargetMixin {
         const encs = [];
 
         // In preference order
-        encs.push(encodings.encodingCopyRect);
+        if (!this._rfb_openvnc) encs.push(encodings.encodingCopyRect);
         // Only supported with full depth support
         if (this._fb_depth == 24) {
-            encs.push(encodings.encodingTight);
-            encs.push(encodings.encodingTightPNG);
+            if (!this._rfb_openvnc) encs.push(encodings.encodingTight);
+            if (!this._rfb_openvnc) encs.push(encodings.encodingTightPNG);
             encs.push(encodings.encodingHextile);
             encs.push(encodings.encodingRRE);
         }
@@ -1273,6 +1277,7 @@ export default class RFB extends EventTargetMixin {
         encs.push(encodings.pseudoEncodingCompressLevel0 + 2);
 
         encs.push(encodings.pseudoEncodingDesktopSize);
+        if (!this._rfb_openvnc) encs.push(encodings.pseudoEncodingCursor);
         encs.push(encodings.pseudoEncodingLastRect);
         encs.push(encodings.pseudoEncodingQEMUExtendedKeyEvent);
         encs.push(encodings.pseudoEncodingExtendedDesktopSize);
