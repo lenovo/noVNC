@@ -21,7 +21,7 @@ import * as WebUtil from "./webutil.js";
 const UI = {
 
     connected: false,
-    desktopName: "",
+    desktopName: WebUtil.getQueryVar('consoleTitleText'),
 
     statusTimeout: null,
     hideKeyboardTimeout: null,
@@ -209,7 +209,6 @@ const UI = {
             .addEventListener('mousedown', UI.keepControlbar);
         document.getElementById("noVNC_control_bar")
             .addEventListener('keydown', UI.keepControlbar);
-
         document.getElementById("noVNC_view_drag_button")
             .addEventListener('click', UI.toggleViewDrag);
 
@@ -418,17 +417,14 @@ const UI = {
             UI.disableSetting('path');
             UI.disableSetting('repeaterID');
             UI.setMouseButton(1);
-
-            // Hide the controlbar after 2 seconds
-            UI.closeControlbarTimeout = setTimeout(UI.closeControlbar, 2000);
         } else {
-            UI.enableSetting('encrypt');
-            UI.enableSetting('shared');
-            UI.enableSetting('host');
-            UI.enableSetting('port');
-            UI.enableSetting('path');
-            UI.enableSetting('repeaterID');
-            UI.updatePowerButton();
+            // UI.enableSetting('encrypt');
+            // UI.enableSetting('shared');
+            // UI.enableSetting('host');
+            // UI.enableSetting('port');
+            // UI.enableSetting('path');
+            // UI.enableSetting('repeaterID')
+            // UI.updatePowerButton();
             UI.keepControlbar();
         }
 
@@ -487,9 +483,9 @@ const UI = {
         statusElem.textContent = text;
         statusElem.classList.add("noVNC_open");
 
-        // If no time was specified, show the status for 1.5 seconds
+        // If no time was specified, show the status for 5 seconds
         if (typeof time === 'undefined') {
-            time = 1500;
+            time = 5000;
         }
 
         // Error messages do not timeout
@@ -1024,7 +1020,7 @@ const UI = {
         UI.rfb.addEventListener("capabilities", UI.updatePowerButton);
         UI.rfb.addEventListener("clipboard", UI.clipboardReceive);
         UI.rfb.addEventListener("bell", UI.bell);
-        UI.rfb.addEventListener("desktopname", UI.updateDesktopName);
+        // UI.rfb.addEventListener("desktopname", UI.updateDesktopName);
         UI.rfb.clipViewport = UI.getSetting('view_clip');
         UI.rfb.scaleViewport = UI.getSetting('resize') === 'scale';
         UI.rfb.resizeSession = UI.getSetting('resize') === 'remote';
@@ -1117,7 +1113,7 @@ const UI = {
         }
 
         UI.openControlbar();
-        UI.openConnectPanel();
+        // UI.openConnectPanel();
     },
 
     securityFailed(e) {
